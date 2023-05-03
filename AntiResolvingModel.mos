@@ -1,0 +1,83 @@
+!!!
+!
+! Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
+!
+! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
+!
+! Authors: Elena Fernández, Dorota Kuziak, Manuel Munoz-Marquez, and Ismael G. Yero
+!
+! Corresponding author: Manuel Munoz-Marquez (manuel.munoz(at)uca.es)
+!
+! This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+!
+!!!
+
+declarations
+   s: array(V) of mpvar        ! Vertices in set S
+   t: array(V, V) of mpvar     ! t(u, v) = 1 iff v is in the class with representative u
+   class: array(V, R) of mpvar ! class(u, v) = 1 iff u belongs to the class of v
+   rep: array(V) of mpvar      ! rep(u) = 1 iff u is the representative of its class
+
+   R2: linctr                  ! Labels of constraints
+   R3: array(V) of linctr
+   R4: array(V) of linctr
+   R5: array(V, V) of linctr
+   R6: array(V, V) of linctr
+   R8: array(V, V) of linctr
+end-declarations
+
+
+! Constraints (2): S set must be non-empty
+R2 := sum(u in V) s(u) >= 1
+
+forall(u in V) do
+   ! Constraints (3): Each vertex belongs to only one class or to S
+   R3(u) := s(u) + sum(v in V | v <= u) t(v,u) = 1
+   ! Constraints (4): The cardinality of each class is at least k
+   R4(u) := sum(v in V | v > u) t(u,v) >= (k-1) * t(u, u)
+   forall(v in V | v <= u) do
+      ! Constraints (5): the pairs of vertices in each component satisfy the compatibility criterion
+      R5(u, v) := t(v, u) + s(v) <= 1
+   end-do
+end-do
+
+
+forall(u, v in V | v > u) do
+   ! Constraints (6): the classes defined by t are precisely the equivalence classes given by the distances
+   R6(u, v) := s(v) + t(u, v) + sum(w in V | w <> u and w <> v and d(u,w) <> d(v,w)) s(w) >= t(u,u)
+end-do
+
+forall(v, w in V | w > v) do
+   ! Constraints (8): No two vertices with different distances to S belong to the same class
+   R8(v, w) := sum(u in V | d(u,v) <> d(u,w)) s(u) + n * t(v, w) <= n
+end-do
+
+forall(u in V) do
+   ! To identify the representative of each class
+   t(u, u) = rep(u)
+   ! class and rep variables define the same representative of each class
+   sum(r in R) class(u, r) = rep(u)
+   ! Limit the number of nodes in each class
+   sum(v in V | v > u) t(u, v) <= (k - 1) * class(u, 1) + (n - k) * (1 - class(u, 1))
+end-do
+
+! The class of vertex 1 is always itself
+sum(u in V) class(u, 1) = 1
+
+
+FO:=sum(u in V) s(u)   ! Objective function
+
+forall(u in V) s(u) is_binary
+forall(u, v in V) t(u,v) is_binary
+forall(u in V) rep(u) is_binary
+forall(u in V, r in R) class(u,r) is_binary
+
+starttime:= gettime
+
+minimize(FO)
+cpu := gettime - starttime 
+
