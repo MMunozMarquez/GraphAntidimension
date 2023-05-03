@@ -1,0 +1,169 @@
+!!!
+!
+! AntiResolving.mos: Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
+!
+! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
+
+! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
+!
+! Authors: Elena Fernández, Dorota Kuziak, Manuel Munoz-Marquez, and Ismael G. Yero
+!
+! Corresponding author: Manuel Munoz-Marquez (manuel.munoz(at)uca.es)
+!
+! This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+!
+!!!
+
+model Torus
+uses 'mmxprs', 'mmsystem','mmjobs'
+
+declarations
+   n: integer           ! Total number of vertices
+   max_r: integer       ! Maximum number of classes
+   n_rows: integer      ! Number of rows
+   n_columns: integer   ! Number of columns
+   k: integer           ! parameter of k-antiresolving sets (minimum number of elements in each class)
+end-declarations
+
+! Print info message and read input parameters
+writeln('Find the k-antidimension and a k-antidimension set of a torus')
+writeln('Number of rows: ')
+read(n_rows)
+writeln('Number of columns: ')
+read(n_columns)
+writeln('Value of k: ')
+read(k)
+
+n := n_rows * n_columns
+max_r := integer(n/k)-1
+
+declarations
+   V = 1..n             ! indices of vertices
+   R = 1..max_r	        ! indices of classes
+   num_edges: integer   ! number of edges
+! Auxiliary variables
+   i1: integer
+   i2: integer
+   node: integer
+! Edges of the torus
+   Edge: array(range) of record
+      i: integer
+      j: integer
+   end-record
+end-declarations
+
+
+! Generates a torus with n_rows rows and n_columns columns)
+
+! Initialize num_edges to generate edge set
+num_edges := 0
+
+! Generate edges
+! Bottom right vertex
+node := n_rows * n_columns
+num_edges := num_edges + 1
+Edge(num_edges).i := node
+Edge(num_edges).j := 1
+num_edges := num_edges + 1
+Edge(num_edges).i := node
+Edge(num_edges).j := n_columns
+! Remaining right border
+forall(i in 1..(n_rows - 1)) do
+   node := i * n_columns
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + 1
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + n_columns
+end-do
+! Remaining bottom border
+forall(j in 1..(n_columns -1)) do
+   node := (n_rows - 1) * n_columns + j
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + 1
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + n_columns
+end-do
+! Remaining vertices
+forall(i in 1..(n_rows - 1), j in 1..(n_columns -1)) do
+   node := (i-1) * n_columns + j
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + 1
+   num_edges := num_edges + 1
+   Edge(num_edges).i := node
+   Edge(num_edges).j := node + n_columns
+end-do
+
+
+! Computes distances between each pair of vertices d(., .)
+
+declarations
+   d : array(V, V) of integer
+end-declarations
+
+forall (node1 in V) do
+	i1 := integer((node1 - 1)/n_columns) + 1
+	j1 := node1 - (i1 - 1) * n_columns
+	forall(node2 in V | node2 <> node1) do
+	   i2 := integer((node2 - 1)/n_columns) + 1
+	   j2 := node2 - (i2 - 1) * n_columns
+	   d(node1, node2) := minlist(abs(i1 - i2), n_rows - abs(i1 - i2)) + minlist(abs(j1 - j2), n_columns - abs(j1 - j2))
+	end-do
+end-do
+
+! Include the model file and solve it
+include "AntiResolvingModel.mos"
+
+! Check for optimality
+if (getprobstat = XPRS_OPT) then
+   ! Output solution:
+   ! k-antidimension
+   writeln(k, '-antidimension: ', getobjval)
+   ! k-antidimension set
+   write(k, '-antidimension set: ')
+   forall(u in V) do
+      if(getsol(s(u)) > 0.5) then
+         write(u, ' ')
+      end-if
+   end-do
+   writeln
+   ! Classes
+   writeln('Classes:')
+   forall (u in V | getsol(t(u, u)) > 0.5) do
+   	write(u, ': ')
+   	forall(v in V) do
+   	   if (getsol(t(u, v)) > 0.5 or getsol(t(v, u)) > 0.5) then
+   	      write(v, ' ')
+   	   end-if
+   	end-do
+   	writeln
+   end-do
+   ! Representatives of classes
+   writeln('Representatives of classes:')
+   forall (u in V) do
+      if(getsol(rep(u)) > 0.5) then
+         write(u, ' ')
+      end-if
+   end-do
+   writeln
+   ! Smallest class
+   writeln('Smallest class: ')
+   forall(u in V) do
+      if(getsol(class(u, 1)) > 0.5) then
+         writeln(u)
+      end-if
+   end-do
+else
+   writeln("The problem is not feasible, so there is no ", k, "-antiresolving set")
+end-if
+
+end-model
+

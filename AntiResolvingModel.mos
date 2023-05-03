@@ -1,7 +1,9 @@
 !!!
+! 
+! AntiResolving.mos: Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
 !
-! Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
-!
+! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
+
 ! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
 !
 ! Authors: Elena Fernández, Dorota Kuziak, Manuel Munoz-Marquez, and Ismael G. Yero
@@ -69,14 +71,14 @@ end-do
 sum(u in V) class(u, 1) = 1
 
 
-FO:=sum(u in V) s(u)   ! Objective function
+FO := sum(u in V) s(u)   ! Objective function
 
 forall(u in V) s(u) is_binary
 forall(u, v in V) t(u,v) is_binary
 forall(u in V) rep(u) is_binary
 forall(u in V, r in R) class(u,r) is_binary
 
-starttime:= gettime
+starttime := gettime
 
 minimize(FO)
 cpu := gettime - starttime 
