@@ -2,8 +2,12 @@
 ! 
 ! AntiResolving.mos: Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
 !
+! CylinderGraph.mos: Generate a cylinder graph and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
 ! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
-
+!
+! Print.mos: File to print results
+!
 ! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
 !
 ! Authors: Elena Fernández, Dorota Kuziak, Manuel Munoz-Marquez, and Ismael G. Yero

@@ -1,0 +1,66 @@
+!!!
+!
+! AntiResolving.mos: Formulation of the problem of looking for the antidimension and the antiresolving set in a graph
+!
+! CylinderGraph.mos: Generate a cylinder graph and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
+! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos
+!
+! Print.mos: File to print results
+!
+! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
+!
+! Authors: Elena Fernández, Dorota Kuziak, Manuel Munoz-Marquez, and Ismael G. Yero
+!
+! Corresponding author: Manuel Munoz-Marquez (manuel.munoz(at)uca.es)
+!
+! This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+!
+!!!
+
+! Check for optimality
+if (getprobstat = XPRS_OPT) then
+   ! Output solution:
+   ! k-antidimension
+   writeln(k, '-antidimension: ', getobjval)
+   ! k-antidimension set
+   write(k, '-antidimension set: ')
+   forall(u in V) do
+      if(getsol(s(u)) > 0.5) then
+         write(u, ' ')
+      end-if
+   end-do
+   writeln
+   ! Classes
+   writeln('Classes:')
+   forall (u in V | getsol(t(u, u)) > 0.5) do
+   	write(u, ': ')
+   	forall(v in V) do
+   	   if (getsol(t(u, v)) > 0.5 or getsol(t(v, u)) > 0.5) then
+   	      write(v, ' ')
+   	   end-if
+   	end-do
+   	writeln
+   end-do
+   ! Representatives of classes
+   writeln('Representatives of classes:')
+   forall (u in V) do
+      if(getsol(rep(u)) > 0.5) then
+         write(u, ' ')
+      end-if
+   end-do
+   writeln
+   ! Smallest class
+   writeln('Smallest class: ')
+   forall(u in V) do
+      if(getsol(class(u, 1)) > 0.5) then
+         writeln(u)
+      end-if
+   end-do
+else
+   writeln("The problem is not feasible, so there is no ", k, "-antiresolving set")
+end-if

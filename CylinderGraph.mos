@@ -22,7 +22,7 @@
 !
 !!!
 
-model Torus
+model Cylinder
 uses 'mmxprs', 'mmsystem','mmjobs'
 
 declarations
@@ -34,7 +34,7 @@ declarations
 end-declarations
 
 ! Print info message and read input parameters
-writeln('Find the k-antidimension and a k-antidimension set of a torus graph')
+writeln('Find the k-antidimension and a k-antidimension set of a cylinder graph')
 writeln('Number of rows: ')
 read(n_rows)
 writeln('Number of columns: ')
@@ -53,7 +53,7 @@ declarations
    i1: integer
    i2: integer
    node: integer
-! Edges of the torus
+! Edges of the cylinder
    Edge: array(range) of record
       i: integer
       j: integer
@@ -61,10 +61,11 @@ declarations
 end-declarations
 
 
-! Generates a torus graph with n_rows rows and n_columns columns
+! Generates a cylinder graph with n_rows rows and n_columns columns
 
 ! Initialize num_edges to generate edge set
 num_edges := 0
+
 
 ! Generate edges
 ! Bottom right vertex
@@ -72,15 +73,9 @@ node := n_rows * n_columns
 num_edges := num_edges + 1
 Edge(num_edges).i := node
 Edge(num_edges).j := n_columns
-num_edges := num_edges + 1
-Edge(num_edges).i := node
-Edge(num_edges).j := (n_rows -1 ) * n_columns + 1
 ! Remaining right border
 forall(i in 1..(n_rows - 1)) do
    node := i * n_columns
-   num_edges := num_edges + 1
-   Edge(num_edges).i := node
-   Edge(num_edges).j := node - n_columns + 1
    num_edges := num_edges + 1
    Edge(num_edges).i := node
    Edge(num_edges).j := node + n_columns
@@ -106,19 +101,17 @@ forall(i in 1..(n_rows - 1), j in 1..(n_columns -1)) do
    Edge(num_edges).j := node + n_columns
 end-do
 
- ! Computes distances between each pair of vertices d(., .)
-
+!Computes distances between pairs of vertices d(., .)
 declarations
-   d : array(V, V) of integer
+	d : array(V, V) of integer
 end-declarations
 
-forall (node1 in V) do
-	i1 := integer((node1 - 1)/n_columns) + 1
-	j1 := node1 - (i1 - 1) * n_columns
-	forall(node2 in V | node2 <> node1) do
-	   i2 := integer((node2 - 1)/n_columns) + 1
-	   j2 := node2 - (i2 - 1) * n_columns
-	   d(node1, node2) := minlist(abs(i1 - i2), n_rows - abs(i1 - i2)) + minlist(abs(j1 - j2), n_columns - abs(j1 - j2))
+forall(nodo1 in V) do
+	i1 := integer((nodo1 - 1)/n_columns) + 1
+	j1 := nodo1 - (i1 - 1) * n_columns
+	forall(nodo2 in V | nodo2 <> nodo1) do
+		j2 := nodo2 - (i2 - 1) * n_columns
+		d(nodo1, nodo2) := abs(i1 - i2) + minlist(abs(j1 - j2), n_columns - abs(j1 - j2))
 	end-do
 end-do
 
@@ -129,4 +122,3 @@ include "AntiResolvingModel.mos"
 include "Print.mos"
 
 end-model
-
