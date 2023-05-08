@@ -6,6 +6,12 @@
 !
 ! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
 !
+! DenseGraph.mos: Generate a dense graph with a given degree and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
+! SparseGraph.mos: Generate a dense sparse with a given degree and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
+! Distances.mos: File to compute the distances between each pair of nodes in a graph
+!
 ! Print.mos: File to print results
 !
 ! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)

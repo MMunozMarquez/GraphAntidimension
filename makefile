@@ -12,7 +12,7 @@ Torus.k=2
 
 default: DenseGraph.out CylinderGraph.out TorusGraph.out
 	@echo All job done
-DenseGraph.out: DenseGraph.mos makefile
+DenseGraph.out: DenseGraph.mos Distances.mos makefile
 	echo $(DenseGraph.n)\\n$(DenseGraph.maxdegree)\\n$(DenseGraph.k) | mosel DenseGraph.mos | tee DenseGraph.out
 CylinderGraph.out: CylinderGraph.mos
 	echo $(Cylinder.n_rows)\\n$(Cylinder.n_columns)\\n$(Cylinder.k) | mosel CylinderGraph.mos | tee CylinderGraph.out

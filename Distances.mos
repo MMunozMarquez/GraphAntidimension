@@ -4,7 +4,7 @@
 !
 ! CylinderGraph.mos: Generate a cylinder graph and find its antidimension and an antidimension set trough AntiResolving.mos 
 !
-! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos
+! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
 !
 ! DenseGraph.mos: Generate a dense graph with a given degree and find its antidimension and an antidimension set trough AntiResolving.mos 
 !
@@ -28,45 +28,43 @@
 !
 !!!
 
-! Check for optimality
-if (getprobstat = XPRS_OPT) then
-   ! Output solution:
-   ! k-antidimension
-   writeln(k, '-antidimension: ', getobjval)
-   ! k-antidimension set
-   write(k, '-antidimension set: ')
-   forall(u in V) do
-      if(getsol(s(u)) > 0.5) then
-         write(u, ' ')
+! Computes distances between pairs of vertices with Floyd-Warshall
+function distances(n: integer, vertexdegree: array(V: range) of integer, dist: array(range, range) of integer): integer
+   forall(i1, i2 in V | i1 <> i2) d(i1,i2) := dist(i1, i2)
+   forall(i2 in V) do
+      forall(i1 in V| i1<>i2) do
+         forall(k1 in V|k1<>i2) do
+	    d(i1, k1) := minlist(d(i1, k1), d(i1, i2) + d(i2, k1))
+	 end-do
+      end-do
+   end-do
+   
+   maxdist:=0
+   ndist1:=0
+   ndist2:=0
+   forall(i1,i2 in V|i2>i1) do
+      if(d(i1, i2) > maxdist) then
+         maxdist := d(i1, i2)
+	 ndist1 := i1
+	 ndist2 := i2
       end-if
    end-do
-   writeln
-   ! Classes
-   writeln('Classes:')
-   forall (u in V | getsol(t(u, u)) > 0.5) do
-   	write(u, ': ')
-   	forall(v in V) do
-   	   if (getsol(t(u, v)) > 0.5 or getsol(t(v, u)) > 0.5) then
-   	      write(v, ' ')
-   	   end-if
-   	end-do
-   	writeln
-   end-do
-   ! Representatives of classes
-   writeln('Representatives of classes:')
-   forall (u in V) do
-      if(getsol(rep(u)) > 0.5) then
-         write(u, ' ')
+   icount := 0
+   icmax := 0
+   forall(i1 in V) do
+      if(vertexdegree(i1) = 0) then
+         vertexdegree(i1) := 1
+	 writeln('SHOULD NOT HAPPEN degree = 0 para ', i1)
       end-if
-   end-do
-   writeln
-   ! Smallest class
-   writeln('Smallest class: ')
-   forall(u in V) do
-      if(getsol(class(u, 1)) > 0.5) then
-         writeln(u)
+      if(vertexdegree(i1) = 1) then
+         icount:=icount+1
       end-if
-   end-do
-else
-   writeln("The problem is not feasible, so there is no ", k, "-antiresolving set")
-end-if
+      if(vertexdegree(i1)>icmax) then
+         icmax:=vertexdegree(i1)
+      end-if
+   end-do 
+
+returned := icmax
+
+end-function
+

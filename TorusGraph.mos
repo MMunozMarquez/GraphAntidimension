@@ -6,6 +6,12 @@
 !
 ! TorusGraph.mos: Generate a torus graph and find its antidimension and an antidimension set trough AntiResolving.mos 
 !
+! DenseGraph.mos: Generate a dense graph with a given degree and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
+! SparseGraph.mos: Generate a dense sparse with a given degree and find its antidimension and an antidimension set trough AntiResolving.mos 
+!
+! Distances.mos: File to compute the distances between each pair of nodes in a graph
+!
 ! Print.mos: File to print results
 !
 ! From paper: On the (k, l)-anonymity of networks via their k-metric antidimension (2023)
@@ -43,17 +49,17 @@ writeln('Value of k: ')
 read(k)
 
 n := n_rows * n_columns
-max_r := integer(n/k)-1
+max_r := integer(n/k) - 1
 
 declarations
    V = 1..n             ! indices of vertices
    R = 1..max_r	        ! indices of classes
    num_edges: integer   ! number of edges
-! Auxiliary variables
+   ! Auxiliary variables
    i1: integer
    i2: integer
    node: integer
-! Edges of the torus
+   ! Edges of the torus
    Edge: array(range) of record
       i: integer
       j: integer
