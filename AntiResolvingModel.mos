@@ -33,8 +33,11 @@ declarations
    t: array(V, V) of mpvar     ! t(u, v) = 1 iff v is in the class with representative u
    class: array(V, R) of mpvar ! class(u, v) = 1 iff u belongs to the class of v
    rep: array(V) of mpvar      ! rep(u) = 1 iff u is the representative of its class
+   starttime: real
+   cpu: real
 
-   R2: linctr                  ! Labels of constraints
+   FO: linctr                  ! Labels of constraints
+   R2: linctr
    R3: array(V) of linctr
    R4: array(V) of linctr
    R5: array(V, V) of linctr
@@ -48,7 +51,7 @@ R2 := sum(u in V) s(u) >= 1
 
 forall(u in V) do
    ! Constraints (3): Each vertex belongs to only one class or to S
-   R3(u) := s(u) + sum(v in V | v <= u) t(v,u) = 1
+   R3(u) := s(u) + sum(v in V | v <= u) t(v, u) = 1
    ! Constraints (4): The cardinality of each class is at least k
    R4(u) := sum(v in V | v > u) t(u,v) >= (k-1) * t(u, u)
    forall(v in V | v <= u) do
@@ -60,12 +63,12 @@ end-do
 
 forall(u, v in V | v > u) do
    ! Constraints (6): the classes defined by t are precisely the equivalence classes given by the distances
-   R6(u, v) := s(v) + t(u, v) + sum(w in V | w <> u and w <> v and d(u,w) <> d(v,w)) s(w) >= t(u,u)
+   R6(u, v) := s(v) + t(u, v) + sum(w in V | w <> u and w <> v and d(u, w) <> d(v, w)) s(w) >= t(u, u)
 end-do
 
 forall(v, w in V | w > v) do
    ! Constraints (8): No two vertices with different distances to S belong to the same class
-   R8(v, w) := sum(u in V | d(u,v) <> d(u,w)) s(u) + n * t(v, w) <= n
+   R8(v, w) := sum(u in V | d(u, v) <> d(u, w)) s(u) + n * t(v, w) <= n
 end-do
 
 forall(u in V) do

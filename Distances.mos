@@ -29,20 +29,35 @@
 !!!
 
 ! Computes distances between pairs of vertices with Floyd-Warshall
-function distances(n: integer, vertexdegree: array(V: range) of integer, dist: array(range, range) of integer): integer
-   forall(i1, i2 in V | i1 <> i2) d(i1,i2) := dist(i1, i2)
+function distances( V: range,
+                    Edge: EdgeSet,
+		    vertexdegree: array(range) of integer,
+		    d: array(range, range) of integer): integer
+   declarations
+      icmax: integer
+      icount: integer
+      maxdist: integer
+      ndist1: integer
+      ndist2: integer
+   end-declarations
+   forall(i1 in V) d(i1, i1) := 0
+   forall(i1, i2 in V | i1 <> i2) d(i1, i2) := 99999999
+   forall(i1 in nEdges) do
+      d(Edge(i1).i, Edge(i1).j) := 1
+      d(Edge(i1).j, Edge(i1).i) := 1
+   end-do
    forall(i2 in V) do
-      forall(i1 in V| i1<>i2) do
-         forall(k1 in V|k1<>i2) do
+      forall(i1 in V | i1 <> i2) do
+         forall(k1 in V | k1 <> i2) do
 	    d(i1, k1) := minlist(d(i1, k1), d(i1, i2) + d(i2, k1))
 	 end-do
       end-do
    end-do
    
-   maxdist:=0
-   ndist1:=0
-   ndist2:=0
-   forall(i1,i2 in V|i2>i1) do
+   maxdist := 0
+   ndist1 := 0
+   ndist2 := 0
+   forall(i1, i2 in V| i2 > i1) do
       if(d(i1, i2) > maxdist) then
          maxdist := d(i1, i2)
 	 ndist1 := i1
@@ -57,10 +72,10 @@ function distances(n: integer, vertexdegree: array(V: range) of integer, dist: a
 	 writeln('SHOULD NOT HAPPEN degree = 0 para ', i1)
       end-if
       if(vertexdegree(i1) = 1) then
-         icount:=icount+1
+         icount:=icount + 1
       end-if
-      if(vertexdegree(i1)>icmax) then
-         icmax:=vertexdegree(i1)
+      if(vertexdegree(i1) > icmax) then
+         icmax := vertexdegree(i1)
       end-if
    end-do 
 
