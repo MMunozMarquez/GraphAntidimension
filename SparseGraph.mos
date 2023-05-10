@@ -1,0 +1,145 @@
+model GenSparseGraphFormulation
+uses 'mmxprs', 'mmsystem','mmjobs'
+
+options noimplicit
+
+declarations
+   nEdges: range
+   EdgeSet = array(nEdges) of record
+      i: integer
+      j: integer
+   end-record
+end-declarations
+
+! Compute distances between each pair of nodes
+include "Distances.mos"
+
+
+declarations
+   n: integer       ! Total number of vertices
+   degree: integer  ! Target degree
+   k: integer       ! parameter of k-antiresolving sets (minimum number of elements in the classes)
+   max_r: integer   ! Maximum number of classes
+   seed: integer    ! Seed for the random number generator
+end-declarations
+
+! Print info message and read input parameters
+writeln('Generate a sparse graph and find its k-antidimension and a k-antidimension set')
+writeln('Number vertices:')
+read(n)
+writeln('Maximum vertex degree')
+read(degree)
+writeln('Value of k:')
+read(k)
+
+seed:=135797531
+
+setrandseed(seed)
+max_r:=integer(n/k)-1
+
+declarations
+   V = 1..n           ! indices of vertices
+   R = 1..max_r	      ! indices of classes
+   num_edges: integer ! number of edges
+   Edge: EdgeSet
+   d:array(V, V) of integer
+   ! Auxiliary variables
+   ii: integer
+   index: integer
+   k_degree: integer
+   link: array(V, V) of boolean
+   maxdegree: integer
+   n_sat: integer
+   repe: array(V) of boolean
+   vertexdegree: array(V) of integer
+end-declarations
+
+! Generates a graph with n vertices and maximum degree degree
+forall(i in V) do
+   n_sat := 0
+   k_degree := degree
+   forall(j in V) do
+      if(link(i, j) or link (j,i)) then
+         repe(j) := true
+	 n_sat := n_sat + 1
+      else
+         repe(j) := false
+         if(vertexdegree(j) >= degree) then
+            n_sat := n_sat + 1
+         end-if
+      end-if
+   end-do
+   repe(i) := true
+   n_sat := n_sat + 1
+   k_degree := maxlist(degree - vertexdegree(i), 0)
+   while(k_degree > 0 and k_degree < n-n_sat) do
+      ii := integer(round((n * random) + 0.5))
+      if(ii <> i and not repe(ii) and vertexdegree(ii) < degree) then
+         k_degree := k_degree - 1
+	 num_edges := num_edges + 1
+	 vertexdegree(ii) := vertexdegree(ii) + 1
+	 vertexdegree(i) := vertexdegree(i) + 1
+	 if(vertexdegree(i) = degree) then
+	    n_sat := n_sat + 1
+	 end-if
+	 if(vertexdegree(ii) = degree) then
+	    n_sat := n_sat + 1
+	 end-if
+	 link(i, ii) := true
+	 link(ii, i) := true
+	 repe(ii) := true
+	 if(i < ii) then
+	    Edge(num_edges).i := i
+	    Edge(num_edges).j := ii
+	 else
+	    Edge(num_edges).i := ii
+	    Edge(num_edges).j := i
+	 end-if
+      end-if
+   end-do
+   if(k_degree > 0 and k_degree >= n - n_sat) then
+      index := 1
+      while(k_degree > 0) do
+         ii := integer(round((i*random) + 0.5))
+	 if(not repe(ii)) then
+	    k_degree := k_degree - 1
+	    num_edges := num_edges + 1
+	    vertexdegree(ii) := vertexdegree(ii) + 1
+	    vertexdegree(i) := vertexdegree(i) + 1
+	    link(i, ii) := true
+	    link(ii,i) := true
+	    repe(ii) := true
+	    Edge(num_edges).i := ii
+	    Edge(num_edges).j := i
+	    if(vertexdegree(i) = degree) then
+	       n_sat := n_sat+1
+	    end-if
+	    if(vertexdegree(ii) = degree) then
+	       n_sat := n_sat + 1
+	    end-if
+	 end-if
+      end-do
+   end-if		
+end-do
+
+declarations
+   Edges = 1.. num_edges
+end-declarations
+
+! Computes distances between pairs of vertices with Floyd-Warshall
+maxdegree := distances(V, Edge, vertexdegree, d)
+
+! Info of the generated graph
+writeln('Target degree : ', degree, ' achieved degree : ', maxdegree)
+
+
+! Include the model file and solve it
+include "AntiResolvingModel.mos"
+
+! Print results
+include "Print.mos"
+
+end-model
+
+
+

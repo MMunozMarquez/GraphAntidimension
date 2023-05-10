@@ -47,11 +47,11 @@ include "Distances.mos"
 
 declarations
    n: integer       ! Total number of vertices
-   tau: integer	    ! maximum degree of vertices is tau = n - degree
-   k: integer       ! parameter of k-antiresolving sets (minimum number of elements in the classes)
-   seed: integer    ! Seed for the random number generator
    degree: integer  ! Target degree
+   k: integer       ! parameter of k-antiresolving sets (minimum number of elements in the classes)
    max_r: integer   ! Maximum number of classes
+   seed: integer    ! Seed for the random number generator
+   tau: integer	    ! maximum degree of vertices is degree = n - tau
 end-declarations
 
 
@@ -83,7 +83,6 @@ declarations
    Edge: EdgeSet
    d: array(V, V) of integer ! distances 
    ! Auxiliary variables
-   label: array(V) of boolean
    maxdegree: integer
    n_cand: integer
    repe: array(V) of boolean

@@ -72,7 +72,7 @@ function distances( V: range,
 	 writeln('SHOULD NOT HAPPEN degree = 0 para ', i1)
       end-if
       if(vertexdegree(i1) = 1) then
-         icount:=icount + 1
+         icount := icount + 1
       end-if
       if(vertexdegree(i1) > icmax) then
          icmax := vertexdegree(i1)
